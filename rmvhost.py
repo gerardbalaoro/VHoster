@@ -6,7 +6,7 @@ if __name__ == "__main__":
     ui.block('DELTE VIRTUAL HOST')
     HOST_NAME = input('Host Domain Name:\n >> ')
 
-    delete_host(HOST_NAME)    
-    restart_apache(CONFIG)
+    vhoster.delete(HOST_NAME)    
+    vhoster.restart_apache()
     
     ui.block('FINISHED')
