@@ -2,16 +2,16 @@
 <p align="center">Virtual Host Helper for XAMPP Windows</p>
 
 
-### Binaries
+## Binaries
 
 - **mkvhost**
   - create new virtual host
-  - 
+ 
 - **rmvhost**
   - delete virtual host
 
 
-### Configuration
+## Configuration
 
 The application uses configuration inside the **config.json** file, which is created whenever it is initialized.
 
@@ -26,7 +26,7 @@ The application uses configuration inside the **config.json** file, which is cre
 > This application needs **administrative privileges** in order to access the Windows Hosts File
 
 
-### Building Binaries Using PyInstaller
+## Building Binaries Using PyInstaller
 
 - Intall PyInstaller
 
@@ -42,6 +42,6 @@ The application uses configuration inside the **config.json** file, which is cre
   ```
 
 
-### Credits
+## Credits
 
 - Icon made by [Pixelmeetup](https://www.flaticon.com/authors/pixelmeetup) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
