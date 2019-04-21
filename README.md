@@ -27,9 +27,14 @@
   - Virtual host port number
 
 
+## Installation
+
+Copy the executable inside the root of the XAMPP installation folder.
+
+
 ## Configuration
 
-The application will load the settings inside the **vhoster.json** file at the same directory as the executable.
+The application will load the settings inside the **vhoster.json** file (if it exists) at the same directory as the executable.
 
 ```json
 {
