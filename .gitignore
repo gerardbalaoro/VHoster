@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 ./__pycache__/*
 config.json
+vhoster.json
 
 # C extensions
 *.so

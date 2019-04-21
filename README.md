@@ -2,18 +2,34 @@
 <p align="center">Virtual Host Helper for XAMPP Windows</p>
 
 
-## Binaries
+## Usage
 
-- **mkvhost**
-  - create new virtual host
- 
-- **rmvhost**
-  - delete virtual host
+
+- **Create Host**
+
+   ```
+   vhoster create [-h] [-p PORT] name path
+   ```
+
+- **Create Host**
+
+   ```
+   vhoster delete [-h] name
+   ```
+
+### Arguments
+
+- `name`
+  - Virtual host name
+- `path`
+  - Virtual host root path, relative to XAMPP document root (htdocs)
+- `port` (optional)
+  - Virtual host port number
 
 
 ## Configuration
 
-The application uses configuration inside the **config.json** file, which is created whenever it is initialized.
+The application will load the settings inside the **vhoster.json** file at the same directory as the executable.
 
 ```json
 {
@@ -28,18 +44,9 @@ The application uses configuration inside the **config.json** file, which is cre
 
 ## Building Binaries Using PyInstaller
 
-- Intall PyInstaller
-
-  ```
-  pip install pyinstaller
-  ```
-  
-- Create Binaries
-
-  ```
-  pyinstaller mkvhost.py -F -i favicon.ico
-  pyinstaller rmvhost.py -F -i favicon.ico
-  ```
+```
+pyinstaller vhoster.py -F -i favicon.ico
+```
 
 
 ## Credits
