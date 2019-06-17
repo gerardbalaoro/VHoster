@@ -1,30 +1,34 @@
 import os, ui, re, subprocess, sys
+from config import Config
 
 class VHoster(object):
 
-    def __init__(self, XAMPP_DIR, DOCUMENT_ROOT):
+    def __init__(self, CONFIG_PATH):
         ui.title()
-        self.XAMPP_DIR = os.path.abspath(XAMPP_DIR)
-        self.DOCUMENT_ROOT = os.path.abspath(DOCUMENT_ROOT)
+        self.config = Config(CONFIG_PATH)
+        if self.config.validate() == False:
+            ui.line('Configuration Error')
+            self.config.generate()
 
-        ui.block(['XAMPP Directory: ' + self.XAMPP_DIR, 'Document Root: ' + self.DOCUMENT_ROOT], 'Loaded Configuration')
-        if not os.path.exists(self.XAMPP_DIR) or not os.path.exists(self.DOCUMENT_ROOT):
-            ui.block('XAMPP Directory or Document Root Not Found', 'Error')
-            sys.exit(1)
+        self.DOCUMENT_ROOT = self.config('document_root')
+        self.HOSTS_FILE = self.config('hosts_file')
+        self.CONF_FILE = self.config('vhosts_conf_path')
 
-        self.HOSTS_FILE = os.path.join(os.environ['SystemRoot'], 'system32\\drivers\\etc\\hosts')
-        self.CONF_FILE = os.path.join(self.XAMPP_DIR,'apache\\conf\\extra\\httpd-vhosts.conf')
+    def configure(self):
+        ui.line('Configuring Application')
+        self.config.generate()
+        ui.line('Configuration Saved')    
 
-    def create(self, hostname:str, path:str, port=80):
+    def add(self, hostname:str, path:str, port=80):
         ui.line('Creating ' + hostname + ':' + str(port) + ', at ' + path)
         with open(self.HOSTS_FILE, 'r+') as f:
-            ui.line('Writing system hosts file')
+            ui.line('Writing System Hosts File')
             content = f.read()
             f.write('\n127.0.0.1 ' + hostname + ' #VHost')
             f.truncate()
 
         with open(self.CONF_FILE, 'r+') as f:
-            ui.line('Writing apache vhosts configuration')  
+            ui.line('Writing Apache Configuration')  
             content = f.read().strip()
             f.write(
                 '\n\n## StartHost: ' + hostname + '\n<VirtualHost ' + hostname + ':' + str(port) + '>\n' +
@@ -37,8 +41,11 @@ class VHoster(object):
             )
             f.truncate()
 
-    def delete(self, hostname:str):
-        ui.line('Removing ' + hostname)
+        ui.line('Virtual Host Created')
+
+    def remove(self, hostname:str, port=80, quiet=False):
+        if not quiet:
+            ui.line('Removing ' + hostname + ':' + str(port))
         with open(self.HOSTS_FILE, 'r+') as f:
             content = []
             for line in f:
@@ -51,13 +58,27 @@ class VHoster(object):
             
 
         with open(self.CONF_FILE, 'r+') as f:
-            ui.line('Writing apahe vhosts configuration')
+            ui.line('Writing Apache Configuration')
             content = f.read().strip()
             f.seek(0)
-            f.write(re.sub('## StartHost: ' + re.escape(hostname) + '([\S\s]*?)## EndHost', '', content).strip())
+            f.write(re.sub('## StartHost: ' + re.escape(hostname) + ':' + str(port) + '([\S\s]*?)## EndHost', '', content).strip())
             f.truncate()  
         
+        if not quiet:
+            ui.line('Virtual Host Removed')
+        
+    def list(self):
+        ptrn = r"## StartHost: (\S*)\s*<VirtualHost \*:(\d*)>\s*DocumentRoot \"(\S*)\"\s*ServerName (\S*)\n\s*[\s\S]*?## EndHost"
+        conf = open(self.CONF_FILE, 'r').read()
+        hosts = re.findall(ptrn, conf)
+        ui.line('Listing Active Virtual Hosts', '\n\n')
+        for host in hosts:
+            ui.line('Host Name: ' + host[0])
+            ui.line('Document Root: ' + host[2], '\n\n')
 
     def restart_apache(self):
-        ui.line('Restarting apache service')
-        subprocess.call([os.path.join(self.XAMPP_DIR, 'apache\\bin\\httpd.exe'), '-k', 'restart'])
+        ui.line('Restarting Apache Service')
+        proc = subprocess.run(self.config('apache_restart').split(' '), encoding='utf-8', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+        for line in proc.stdout.split('\n'):
+            if line.strip() != '':
+                ui.line(line)

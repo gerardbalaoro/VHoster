@@ -5,16 +5,28 @@
 ## Usage
 
 
-- **Create Host**
+- **Add Host**
 
    ```
-   vhoster create [-h] [-p PORT] name path
+   vhoster add [-h] [--port PORT] name path
    ```
 
-- **Create Host**
+- **Remove Host**
 
    ```
-   vhoster delete [-h] name
+   vhoster remove [-h] [--port PORT] name
+   ```
+
+- **List Hosts**
+
+   ```
+   vhoster hosts
+   ```
+
+- **Configure Application**
+
+   ```
+   vhoster config
    ```
 
 ### Arguments
@@ -23,24 +35,30 @@
   - Virtual host name
 - `path`
   - Virtual host root path, relative to XAMPP document root (htdocs)
-- `port` (optional)
+- `--port`
   - Virtual host port number
+- `-h`
+  - Help
 
 
 ## Installation
 
-Copy the executable inside the root of the XAMPP installation folder.
+Download the executable and run `vhoster config`
 
 
 ## Configuration
 
-The application will load the settings inside the **vhoster.json** file (if it exists) at the same directory as the executable.
+The application will load the settings inside the **vhoster.ini** file (if it exists) at the same directory as the executable.
 
-```json
-{
-   "XAMPP_DIR": "C:\\Xampp\\",
-   "DOCUMENT_ROOT": "C:\\Xampp\\htdocs\\"
-}
+```ini
+[paths]
+document_root = C:/Xampp/htdocs
+vhosts_conf_path = C:/Xampp/apache/conf/extra/httpd-vhosts.conf
+apache_bin = C:/Xampp/apache/bin
+hosts_file = C:/Windows/System32/drivers/etc/hosts
+
+[commands]
+apache_restart = $APACHE_BIN/httpd -k restart
 ```
 
 

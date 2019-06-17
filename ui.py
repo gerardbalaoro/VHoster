@@ -5,7 +5,7 @@ def line(message, end='\n', pre=' - '):
     return print(pre + message, end=end)
 
 def title():
-    block('Virtual Host Helper for XAMPP Windows\n'
+    block('Virtual Host Helper for XAMPP\n'
         'by: Gerard Balaoro\n\nhttps://github.com/GerardBalaoro/VHoster',
         title='VHOSTER')
 
