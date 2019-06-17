@@ -1,5 +1,9 @@
 <h1 align="center">VHoster</h1>
-<p align="center">Virtual Host Helper for XAMPP Windows</p>
+<p align="center">
+   Virtual Host Helper for XAMPP Windows<br><br>
+   <img align="center" src="preview.gif">
+</p>
+
 
 
 ## Usage

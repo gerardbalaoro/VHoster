@@ -31,7 +31,7 @@ class VHoster(object):
             ui.line('Writing Apache Configuration')  
             content = f.read().strip()
             f.write(
-                '\n\n## StartHost: ' + hostname + '\n<VirtualHost ' + hostname + ':' + str(port) + '>\n' +
+                '\n\n## StartHost: ' + hostname + ':' + str(port) + '\n<VirtualHost *:' + str(port) + '>\n' +
                     '\tDocumentRoot "' + os.path.abspath(os.path.join(self.DOCUMENT_ROOT, path)) + '"\n' +
                     '\tServerName ' + hostname + '\n' +
                     '\t<Directory "' + os.path.abspath(os.path.join(self.DOCUMENT_ROOT, path)) + '">\n' +
