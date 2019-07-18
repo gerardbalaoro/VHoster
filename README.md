@@ -27,31 +27,26 @@
   - Virtual host port number
 
 
-## Installation
-
-Copy the executable inside the root of the XAMPP installation folder.
-
-
 ## Configuration
 
-The application will load the settings inside the **vhoster.json** file (if it exists) at the same directory as the executable.
+The application will load the settings inside the **config.json** file in the user app data directory.
 
 ```json
 {
-   "XAMPP_DIR": "C:\\Xampp\\",
-   "DOCUMENT_ROOT": "C:\\Xampp\\htdocs\\"
+    "tld": "test",
+    "dns": {
+        "file": "C:/Windows/System32/drivers/etc/hosts"
+    },
+    "apache": {
+        "bin": "C:/DevApps/Xampp/apache/bin/httpd.exe",
+        "conf": "C:/DevApps/Xampp/apache/conf/extra/httpd-vhosts.conf"
+    },
+    "collection": [],
+    "sites": []
 }
 ```
 
-
 > This application needs **administrative privileges** in order to access the Windows Hosts File
-
-
-## Building Binaries Using PyInstaller
-
-```
-pyinstaller vhoster.py -F -i favicon.ico
-```
 
 
 ## Credits
