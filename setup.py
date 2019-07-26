@@ -19,7 +19,7 @@ setup(
         'terminaltables'
     ],
     entry_points = {
-        'console_scripts': ['vhoster=vhoster.bin.vhoster'],
+        'console_scripts': ['vhoster=vhoster.cli:cli'],
     },
     package_data={
         '': ['*.md', '*.txt', 'LICENSE', 'README', '*.ico'],

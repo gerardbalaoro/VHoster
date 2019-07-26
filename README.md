@@ -4,27 +4,53 @@
 
 ## Usage
 
+```
+Usage: vhoster [OPTIONS] COMMAND [ARGS]...
 
-- **Create Host**
+  Apache Virtual Host Manager
 
-   ```
-   vhoster create [-h] [-p PORT] name path
-   ```
+Options:
+  --path PATH  Path to registered site
+  --version    Show application version
+  --help       Show this message and exit.
 
-- **Create Host**
+Commands:
+  forget (remove)  Unregister the current (or specified) PATH or DOMAIN
+  link             Link the current working directory to given DOMAIN
+  list (all)       List all registered sites
+  park (create)    Register the current (or specified) PATH to given DOMAIN
+  restart          Restart Apache server
+  secure           Secure the current (or specified) PATH or DOMAIN with a...
+  set-root         Set specified PATH as document root for current site or...
+  setup            Configure Vhoster
+  show (info)      Find site by DOMAIN or PATH and display its information
+  unsecure         Remove trusted TLS certificate from the current (or...
+```
 
-   ```
-   vhoster delete [-h] name
-   ```
 
-### Arguments
+## Installation
 
-- `name`
-  - Virtual host name
-- `path`
-  - Virtual host root path, relative to XAMPP document root (htdocs)
-- `port` (optional)
-  - Virtual host port number
+### As Python Module
+
+- Clone this repository, or download as ZIP
+
+    ```
+    git clone https://github.com/GerardBalaoro/VHoster.git
+    ```
+
+- Install using PIP
+
+    ```
+    pip install -U -r requirements.txt
+    pip install -U .
+    ```
+
+### Build Executable Using PyInstaller
+
+    ```
+    pip install -U pyinstaller
+    py build.py
+    ```
 
 
 ## Configuration
@@ -33,17 +59,36 @@ The application will load the settings inside the **config.json** file in the us
 
 ```json
 {
+    // Default TLD
     "tld": "test",
     "dns": {
+        // Path to HOSTS File
         "file": "C:/Windows/System32/drivers/etc/hosts"
     },
     "apache": {
-        "bin": "C:/DevApps/Xampp/apache/bin/httpd.exe",
-        "conf": "C:/DevApps/Xampp/apache/conf/extra/httpd-vhosts.conf"
+        // Path to Apache Executable
+        "bin": "C:/Xampp/apache/bin/httpd.exe",
+        // Path to Apache Configuration File
+        "conf": "C:/Xampp/apache/conf/extra/httpd-vhosts.conf"
     },
-    "collection": [],
-    "sites": []
-}
+    "paths": {
+        // Where to store individual *.conf files
+        "conf": "C:/Xampp/apache/sites/conf",
+        // Where to store generated certificates and keys
+        "certs": "C:/Xampp/apache/sites/certs"
+    },
+    "sites": [
+        {
+            "domain": "localhost",
+            // Working directory
+            "path": "C:/Xampp/htdocs",
+            // Document root (if different from path)
+            "root": "",
+            "secure": true,
+            // Override default TLD
+            "tld": ""
+        }
+    ]
 ```
 
 > This application needs **administrative privileges** in order to access the Windows Hosts File
@@ -51,4 +96,4 @@ The application will load the settings inside the **config.json** file in the us
 
 ## Credits
 
-- Icon made by [Pixelmeetup](https://www.flaticon.com/authors/pixelmeetup) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
+- Icon made by [bqlqn](https://www.flaticon.com/authors/bqlqn) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
