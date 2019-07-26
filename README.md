@@ -55,7 +55,7 @@ Commands:
 
 The application will load the settings inside the **config.json** file in the user app data directory.
 
-```json
+```jsonc
 {
     // Default TLD
     "tld": "test",
