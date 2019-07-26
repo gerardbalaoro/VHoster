@@ -1,80 +1,95 @@
-import os, json
-from .helpers import *
+import os
+import json
+from copy import deepcopy
+from vhoster.helpers import *
+
 
 class Config:
+    """Configuration Driver Class"""
 
-    _filepath = ''
-    _synced = False
-    _data = None
+    # Path to data store file
+    __path = ''
 
-    def __init__(self, path):            
-        self._filepath = path
+    # Config data container
+    __data = None
+
+    def __init__(self, path=''):
+        """Initialize configuration driver instance
+
+        Keyword Arguments:
+            path {str} -- path to data store file (default: {''})
+        """
+        self.__path = path
         self.load()
 
-    def __getattr__(self, name):
-        return self.get(name)
-
-    def install(self):
-        default = {
-            "tld": "test",
-            "dns": {
-                "file": "C:/Windows/System32/drivers/etc/hosts"
-            },
-            "apache": {
-                "bin": "C:/Xampp/apache/bin/httpd.exe",
-                "conf": "C:/Xampp/apache/conf/extra/httpd-vhosts.conf"
-            },
-            "collection": [],
-            "sites": []
-        }
+    def __repr__(self):
+        """Return the canonical representation of this object
         
-    def get(self, key, default=None):
-        nodes = key.split('.')
-        data = self._data
+        Returns:
+            str
+        """
+        return '%s(path=%s)' % (self.__class__.__name__, repr(self.__path))
 
-        for i, node in enumerate(nodes):
-            if isinstance(data, dict):
-                if i + 1 == len(nodes):
-                    return data[node]
-                else:                
-                    if node in data.keys():
-                        data = data[node]
-                    else:
-                        break
-            
-        return default
+    def __str__(self):
+        """Return the string representation of this object
+        
+        Returns:
+            str
+        """
+        return str(self.__data)
 
+    @property
+    def path(self):
+        """Get the path of data store file
+        
+        Returns:
+            [type] -- [description]
+        """
+        return self.__path
+
+    def get(self, key='', default=None, copy=False):
+        """Get value of given key
+
+        Keyword Arguments:
+            key {str} -- key using dot notation (default: {''})
+            default {mixed} -- default value if key does not exist (default: {None})
+            copy {bool} -- create a copy of the value (to break memory refence) (default: {False})
+
+        Returns:
+            mixed
+        """
+        return dot_get(self.__data, key, default, copy)
 
     def set(self, key, value):
+        """Set value of given key, create if not exists
+
+        Arguments:
+            key {str} -- key using dot notation
+            value {mixed} -- key value
+        """
         nodes = key.split('.')
-        data = self._data
+        data = self.__data
 
         for i, node in enumerate(nodes):
             if isinstance(data, dict):
                 if i + 1 == len(nodes):
                     data[node] = value
-                    self._synced = False
-                    self.save()
-                    return True
-                else:                
+                else:
                     if node in data.keys():
-                        data = data[node]                        
+                        data = data[node]
                     else:
-                        break
-            
-        return False
+                        data[node] = value
 
-    def load(self, force=False):
-        if (not self._synced) or force:
-            with open(self._filepath, 'r') as f:
-                self._data = json.load(f)
-                self._synced = True
+        self.save()
 
-    def save(self, force=False):
-        if (not self._synced) or force:
-            with open(self._filepath, 'w+') as f:
-                json.dump(self._data, f, indent=4)
-            
-            self.load()
+    def load(self):
+        """Load data from file, if path is defined"""
+        if self.__path:
+            with open(self.__path, 'r') as f:
+                self.__data = json.load(f)
 
-
+    def save(self):
+        """Save data to file, if file is defined"""
+        if self.__path:
+            with open(self.__path, 'w+') as f:
+                json.dump(self.__data, f, indent=4)

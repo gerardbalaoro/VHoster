@@ -1,30 +1,37 @@
 import subprocess, os
 from .helpers import *
 from .config import Config
-from .console import Console
 
 class Server:
 
     def __init__(self, config: Config):
-        self.console = Console()
         self.config = config
+
+    @property
+    def apache(self):
+        return self.config.get('apache.bin', 'httpd')
 
     def install(self, config):
         if is_os('Windows'):
-            self.console.run(self.config.get('apache.bin'), '-k', 'install')
+            run_command(self.apache + ' -k install')
+            success('Apache is installed')
 
     def uninstall(self):
         if is_os('Windows'):
-            self.console.run(self.config.get('apache.bin'), '-k', 'uninstall')
+            run_command(self.apache + ' -k uninstall')
+            success('Apache is uninstalled')
 
     def start(self):
-        self.console.run(self.config.get('apache.bin'), '-k', 'start')
+        run_command(self.apache + ' -k start')
+        success('Apache service started')
 
     def stop(self):
-        self.console.run(self.config.get('apache.bin'), '-k', 'stop')
+        run_command(self.apache + ' -k stop')
+        warn('Apache service stopped')
 
     def restart(self):
-        self.console.run(self.config.get('apache.bin'), '-k', 'restart')
+        run_command(self.apache + ' -k restart')
+        success('Apache service restarted')
 
     def info(self):
-        self.console.run(self.config.get('apache.bin'), '-v')
+        run_command(self.apache + ' -v')

@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
+from vhoster.cli import app
 
 setup(
-    name='VHoster',
-    version='2.0',
-    author='Gerard Balaoro',
-    desciption='Apache Virtual Hosts Manager',
-    url='https://github.com/GerardBalaoro/VHoster',
+    name=app('name'),
+    version=app('version'),
+    author=app('author'),
+    desciption=app('description'),
+    url=app('url'),
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -17,10 +18,9 @@ setup(
         'importlib-resources',
         'terminaltables'
     ],
-    entry_points='''
-        [console_scripts]
-        vhoster=main:cli
-    ''',
+    entry_points = {
+        'console_scripts': ['vhoster=vhoster.bin.vhoster'],
+    },
     package_data={
         '': ['*.md', '*.txt', 'LICENSE', 'README', '*.ico'],
         'vhoster': ['*.json', '*.conf'],

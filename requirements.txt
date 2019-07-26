@@ -11,12 +11,14 @@ cryptography==2.7
 importlib-resources==1.0.2
 isort==4.3.21
 lazy-object-proxy==1.4.1
+MarkupSafe==1.1.1
 mccabe==0.6.1
+pycodestyle==2.5.0
 pycparser==2.19
-pylint==2.3.1
+pyratemp==0.3.2
 pyrsistent==0.15.3
 six==1.12.0
 terminaltables==3.1.0
+toml==0.10.0
 typed-ast==1.4.0
--e git+https://github.com/GerardBalaoro/VHoster@5451f087f7789c0d279dff83aa326e37ee856ea2#egg=VHoster
 wrapt==1.11.2
