@@ -1,5 +1,5 @@
 <h1 align="center">VHoster</h1>
-<p align="center">Virtual Host Helper for XAMPP Windows</p>
+<p align="center">VApache Virtual Host Manager</p>
 
 
 ## Usage
@@ -47,10 +47,8 @@ Commands:
 
 ### Build Executable Using PyInstaller
 
-    ```
     pip install -U pyinstaller
     py build.py
-    ```
 
 
 ## Configuration
