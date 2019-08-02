@@ -5,6 +5,8 @@ __pycache__/
 ./__pycache__/*
 config.json
 vhoster.json
+data/
+.vscode/
 
 # C extensions
 *.so
