@@ -84,10 +84,10 @@ The application will load the settings inside the **config.json** file in the us
             "path": "C:/Xampp/htdocs/",
             // Document root (if different from path)
             "root": "",
-            "secure": true,
-            // Override default TLD
+            "secure": true
         }
     ]
+}
 ```
 
 > This application needs **administrative privileges** in order to access the Windows Hosts File
