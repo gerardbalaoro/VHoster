@@ -21,13 +21,13 @@ def list(state):
         warn('No registered sites found')
 
 
-@main.command()
+@main.command(short_help='Display site information')
 @click.argument('domain', type=str, required=False, default=None)
 @pass_state
 def show(state, domain):
     """Show information of current site or site registered to DOMAIN"""
     site = state.site
-    if domain or path:
+    if domain:
         site = site.find(domain=domain)
     
     if not site.exists():
@@ -77,9 +77,9 @@ def explore(state, domain):
     webbrowser.open(site.path)
 
 
-@main.command()
+@main.command(aliases=['create'])
 @click.argument('domain', type=str)
-@click.option('--path', '-p', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
+@click.option('--path', '-p', metavar='PATH', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
 @click.option('--root', '-r', metavar='ROOT', type=click.Path(exists=True), help='Specify custom document root')
 @click.option('--secure', '-s', is_flag=True, help='Enable HTTPS and create self-signed certificates')
 @pass_state
@@ -94,7 +94,7 @@ def park(state, domain, path, root, secure):
         if root:
             site.root = root
         if secure:
-            site.secure
+            site.secure = secure
 
         site.save()
         state.server.restart()
@@ -105,7 +105,7 @@ def park(state, domain, path, root, secure):
 
 @main.command(aliases=['remove'])
 @click.argument('domain', type=str, required=False, default=None)
-@click.option('--path', '-p', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
+@click.option('--path', '-p', metavar='PATH', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
 @pass_state
 def forget(state, domain, path):
     """Unregister the current (or specified) PATH or DOMAIN"""
@@ -122,9 +122,9 @@ def forget(state, domain, path):
     success('\nSite removed successfully!')
     
 
-@main.command()
+@main.command(short_help='Secure the site with a trusted TLS certificate')
 @click.argument('domain', type=str, required=False, default=None)
-@click.option('--path', '-p', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
+@click.option('--path', '-p', metavar='PATH', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
 @pass_state
 def secure(state, domain, path):
     """Secure the current (or specified) PATH or DOMAIN with a trusted TLS certificate"""
@@ -142,9 +142,9 @@ def secure(state, domain, path):
         raise click.Abort()
 
 
-@main.command()
+@main.command(short_help='Remove the trusted TLS certificate from site')
 @click.argument('domain', type=str, required=False, default=None)
-@click.option('--path', '-p', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
+@click.option('--path', '-p', metavar='PATH', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
 @pass_state
 def unsecure(state, domain, path):
     """Remove trusted TLS certificate from the current (or specified) PATH or DOMAIN"""
@@ -162,8 +162,8 @@ def unsecure(state, domain, path):
         raise click.Abort()
 
 
-@main.command()
-@click.argument('domain', type=str, required=False, default=None)
+@main.command(short_help='Link current working directory to domain')
+@click.argument('domain', type=str, default=None)
 @pass_state
 def link(state, domain):
     """Link the current working directory to given DOMAIN"""
@@ -178,11 +178,11 @@ def link(state, domain):
         raise click.Abort()
 
 
-@main.command(name='set-root')
+@main.command(short_help='Set document root for the site')
 @click.argument('path', type=click.Path(exists=True))
 @click.argument('domain', type=str, required=False, default=None)
 @pass_state
-def setRoot(state, path, domain):
+def set_root(state, path, domain):
     """Set specified PATH as document root for current site or given DOMAIN"""
     site = state.site
     if domain:
@@ -198,9 +198,9 @@ def setRoot(state, path, domain):
         raise click.Abort()
 
 
-@main.command()
+@main.command(short_help='Refresh configuration files of the site')
 @click.argument('domain', type=str, required=False, default=None)
-@click.option('--path', '-p', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
+@click.option('--path', '-p', metavar='PATH', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
 @pass_state
 def refresh(state, domain, path):
     """Rebuild configuration files for current (or specified) PATH or DOMAIN"""
@@ -230,9 +230,9 @@ def rebuild(state):
         state.server.restart()
 
 
-@main.command()
+@main.command(short_help='Generable public url for the site')
 @click.argument('domain', type=str, required=False, default=None)
-@click.option('--path', '-p', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
+@click.option('--path', '-p', metavar='PATH', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom path')
 @pass_state
 def share(state, domain, path):
     """Generate public url for current (or specified) PATH or DOMAIN"""

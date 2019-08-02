@@ -10,7 +10,7 @@ def app(key=''):
         'description': 'Apache Virtual Host Manager',
         'author': 'Gerard Balaoro',
         'url': 'https://github.com/GerardBalaoro/VHoster',
-        'version': '2.0.0'
+        'version': '0.2.0'
     }, key, copy=True)
 
 
@@ -25,13 +25,18 @@ class State(object):
         self.ngrok = Ngrok(self.config)
 
 pass_state = click.make_pass_decorator(State)
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-@click.group(cls=ClickAliasedGroup)
+@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS)
 @click.version_option(app('version'), '--version', '-v', message='%(version)s')
-@click.help_option('--help', '-h')
 @click.pass_context
 def main(ctx):
-    """Apache Virtual Host Manager"""
+    """Apache Virtual Host Manager
+
+    \b
+    https://github.com/GerardBalaoro/VHoster  
+    Copyright (c) Gerard Balaoro
+    """
     if not os_supported():
         error(platform.system(), title='Platform not supported')
         raise click.Abort()
@@ -44,9 +49,3 @@ def main(ctx):
         raise click.Abort()
 
     ctx.obj = State(config, path=os.getcwd())
-
-
-@main.command()
-def version():
-    """Show application information"""
-    echo('%s (v%s): %s' % (click.style(app('name'), 'cyan'), app('version'), app('description')))

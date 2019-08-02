@@ -1,5 +1,9 @@
 <h1 align="center">VHoster</h1>
-<p align="center">VApache Virtual Host Manager</p>
+<p align="center">
+    Apache Virtual Host Manager<br><br>
+    <img align="center" src="docs/preview.gif">
+</p>
+
 
 
 ## Usage
@@ -9,41 +13,37 @@ Usage: vhoster [OPTIONS] COMMAND [ARGS]...
 
   Apache Virtual Host Manager
 
+  https://github.com/GerardBalaoro/VHoster
+  Copyright (c) Gerard Balaoro
+
 Options:
-  --path PATH  Path to registered site
-  --version    Show application version
-  --help       Show this message and exit.
+  -v, --version  Show the version and exit.
+  -h, --help     Show this message and exit.
 
 Commands:
+  config           Manage configuration variables
+  explore          Browse current site path or site registered to DOMAIN
   forget (remove)  Unregister the current (or specified) PATH or DOMAIN
-  link             Link the current working directory to given DOMAIN
-  list (all)       List all registered sites
+  link             Link current working directory to domain
+  list             List all registered sites
+  open             Open current site or site registered to DOMAIN in browser
   park (create)    Register the current (or specified) PATH to given DOMAIN
-  restart          Restart Apache server
-  secure           Secure the current (or specified) PATH or DOMAIN with a...
-  set-root         Set specified PATH as document root for current site or...
-  setup            Configure Vhoster
-  show (info)      Find site by DOMAIN or PATH and display its information
-  unsecure         Remove trusted TLS certificate from the current (or...
+  rebuild          Rebuild all site configuration files
+  refresh          Refresh configuration files of the site
+  secure           Secure the site with a trusted TLS certificate
+  set-root         Set document root for the site
+  share            Generable public url for the site
+  show             Display site information
+  start            Restart all or specified services
+  stop             Stop all or specified services
 ```
 
 
 ## Installation
 
-### As Python Module
-
-- Clone this repository, or download as ZIP
-
-    ```
-    git clone https://github.com/GerardBalaoro/VHoster.git
-    ```
-
-- Install using PIP
-
-    ```
-    pip install -U -r requirements.txt
-    pip install -U .
-    ```
+```
+pip install git+https://github.com/GerardBalaoro/VHoster#egg=VHoster
+```
 
 ### Build Executable Using PyInstaller
 
@@ -57,8 +57,6 @@ The application will load the settings inside the **config.json** file in the us
 
 ```jsonc
 {
-    // Default TLD
-    "tld": "test",
     "dns": {
         // Path to HOSTS File
         "file": "C:/Windows/System32/drivers/etc/hosts"
@@ -75,16 +73,19 @@ The application will load the settings inside the **config.json** file in the us
         // Where to store generated certificates and keys
         "certs": "C:/Xampp/apache/sites/certs"
     },
+    "ngrok": {
+        // Path to ngrok configuration file
+        "config": "%USERPROFILE%/.ngrok2/ngrok.yml"
+    },
     "sites": [
         {
-            "domain": "localhost",
+            "domain": "localhost.test",
             // Working directory
-            "path": "C:/Xampp/htdocs",
+            "path": "C:/Xampp/htdocs/",
             // Document root (if different from path)
             "root": "",
             "secure": true,
             // Override default TLD
-            "tld": ""
         }
     ]
 ```
