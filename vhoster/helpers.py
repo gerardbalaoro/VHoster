@@ -20,17 +20,29 @@ def os_supported():
     return is_os('Windows')
 
 
-def data_path(*args):
+def app_data(*args):
     """Return path to application data
     
     Returns:
         str
     """
-    import appdirs, os
+    import click, os
     path = os.path.abspath(os.path.join(
-        appdirs.user_data_dir(), 'VHoster', *args))
+        click.get_app_dir('VHoster', roaming=False), *args))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     return path
+
+
+def hosts_path():
+    """Return path to system hosts file
+
+    Returns:
+        str
+    """
+    if is_os('Windows'):
+        return 'C:/Windows/System32/drivers/etc/hosts'
+    else:
+        return '/etc/hosts'
 
 
 def dot_get(data, key='', default=None, copy=False):
@@ -53,7 +65,7 @@ def dot_get(data, key='', default=None, copy=False):
     if nodes:
         for i, node in enumerate(nodes):
             if isinstance(data, dict):
-                if i + 1 == len(nodes):
+                if i + 1 == len(nodes) and node in data.keys():
                     return data[node]
                 else:
                     if node in data.keys():
@@ -117,6 +129,7 @@ def run_command(command, quiet=False):
             echo(line.decode(), nl=False)
         for line in proc.stderr:
             stderr += line
+            error(line.decode(), nl=False)
         proc.communicate()
     else:
         stdout, stderr = proc.communicate()
@@ -138,7 +151,7 @@ def template(name, **substitutions):
     return Template(read_text(templates, name))(**substitutions)
 
 
-def echo(message, title=None, style=None, **kwargs):
+def echo(message, title=None, style=None, pre='',**kwargs):
     """Print message to stdout
     
     Arguments:
@@ -147,9 +160,10 @@ def echo(message, title=None, style=None, **kwargs):
     Keyword Arguments:
         title {str} -- optional text title (default: {None})
         style {str} -- text foreground color (default: {None})
+        pre {str} -- line prefix
     """
     import click
-    click.echo((click.style(str(title) + ': ', fg=style) if title else '') + click.style(str(message), fg=None if title else style), **kwargs)
+    click.echo(pre + (click.style(str(title) + ': ', fg=style) if title else '') + click.style(str(message), fg=None if title else style), **kwargs)
 
 
 def info(message, **kwargs):
@@ -158,7 +172,7 @@ def info(message, **kwargs):
     Arguments:
         message {str}
     """
-    echo(message, style='blue', **kwargs)
+    echo(message, style='cyan', **kwargs)
 
 
 def success(message, **kwargs):

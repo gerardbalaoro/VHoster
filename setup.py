@@ -5,29 +5,30 @@ setup(
     name=app('name'),
     version=app('version'),
     author=app('author'),
-    desciption=app('description'),
+    description=app('description'),
     url=app('url'),
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
         'Click',
-        'appdirs',
         'colorama',
         'cryptography',
-        'appdirs',
+        'pyratemp',
+        'click-alias',
+        'pyngrok',
         'importlib-resources',
         'terminaltables'
     ],
     entry_points = {
-        'console_scripts': ['vhoster=vhoster.cli:cli'],
+        'console_scripts': ['vhoster=vhoster.cli:main']
     },
     package_data={
         '': ['*.md', '*.txt', 'LICENSE', 'README', '*.ico'],
-        'vhoster': ['*.json', '*.conf'],
+        'vhoster': ['*.json', '*.conf']
     },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Windows",
-    ],
+        "Operating System :: Windows"
+    ]
 )

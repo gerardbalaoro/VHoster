@@ -3,35 +3,43 @@ from .helpers import *
 from .config import Config
 
 class Server:
+    """Apache Server Driver
+
+    Arguments:
+        config {Config} -- configuration instance
+    """
 
     def __init__(self, config: Config):
         self.config = config
 
     @property
-    def apache(self):
+    def path(self):
+        """Return path to apache binary
+        
+        Returns:
+            str
+        """
         return self.config.get('apache.bin', 'httpd')
 
-    def install(self, config):
-        if is_os('Windows'):
-            run_command(self.apache + ' -k install')
-            success('Apache is installed')
-
-    def uninstall(self):
-        if is_os('Windows'):
-            run_command(self.apache + ' -k uninstall')
-            success('Apache is uninstalled')
+    def run(self, *args):
+        """Run apache commands
+        
+        Returns:
+            dict -- {command, returncode, output, errors}
+        """
+        return run_command('"{bin}" {args}'.format(bin=self.path, args=' '.join(args)))
 
     def start(self):
-        run_command(self.apache + ' -k start')
+        """Start apache service"""
+        self.run('-k', 'start')
         success('Apache service started')
 
     def stop(self):
-        run_command(self.apache + ' -k stop')
+        """Stop apache service"""
+        self.run('-k', 'stop')
         warn('Apache service stopped')
 
     def restart(self):
-        run_command(self.apache + ' -k restart')
+        """Restart apache service"""
+        self.run('-k', 'restart')
         success('Apache service restarted')
-
-    def info(self):
-        run_command(self.apache + ' -v')

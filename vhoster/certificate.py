@@ -10,29 +10,28 @@ import os
 
 
 class Certificate:
-    """SSL/TLS Certificate Toolkit"""
+    """SSL/TLS Certificate Toolkit
+
+    Arguments:
+        domain {str} -- domain name
+    """
 
     def __init__(self, domain):
-        """Initialize certificate tool for specified domain
-        
-        Arguments:
-            hostName {str}
-        """
         self.domain = domain
 
     def create(self, certPath, keyPath):
         """Create SSL/TLS certificate
-        
+
         Arguments:
             certPath {str} -- path to store certificate file (.crt)
             keyPath {str} -- path to store certificate key (.key)
-        """     
+        """
         key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=1024,
             backend=default_backend()
         )
-        
+
         name = x509.Name([
             x509.NameAttribute(NameOID.COMMON_NAME, self.domain)
         ])
@@ -40,8 +39,8 @@ class Certificate:
         alt_names = x509.SubjectAlternativeName([
             x509.DNSName(self.domain),
             x509.DNSName('www.%s' % self.domain)
-        ])        
-        
+        ])
+
         cert = (
             x509.CertificateBuilder()
                 .subject_name(name)
@@ -57,19 +56,18 @@ class Certificate:
 
         with open(certPath, 'wb') as f:
             f.write(cert.public_bytes(serialization.Encoding.PEM))
-            info(os.path.basename(certPath), title='File created')
+            info(os.path.basename(certPath), title='Certificate Created')
 
         with open(keyPath, 'wb') as f:
             f.write(key.private_bytes(
-                serialization.Encoding.PEM, 
-                serialization.PrivateFormat.TraditionalOpenSSL, 
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.TraditionalOpenSSL,
                 serialization.NoEncryption()
             ))
-            info(os.path.basename(keyPath), title='File created')
 
     def delete(self, certPath, keyPath):
         """Delete SSL/TLS certificate
-        
+
         Arguments:
             certPath {str} -- path to certificate file (.crt)
             keyPath {str} -- path to certificate key (.key)
@@ -77,11 +75,11 @@ class Certificate:
         for path in [certPath, keyPath]:
             if os.path.exists(path) and os.path.isfile(path):
                 os.unlink(path)
-                info(os.path.basename(path), title='Deleted file')
+                info(os.path.basename(path), title='Deleted')
 
     def trust(self, certPath):
         """Add to trusted root certificates
-        
+
         Arguments:
             certPath {str} -- path to certificate file (.crt)
         """
@@ -90,17 +88,18 @@ class Certificate:
             return None
 
         fileName = os.path.basename(certPath)
-        command = run_command('certutil -addstore -f "ROOT" ' + repr(certPath), True)
+        command = run_command(
+            'certutil -addstore -f "ROOT" ' + repr(certPath), True)
 
         if command['returncode'] == 0:
-            success(fileName, title='Added to trusted certificates')
+            info(fileName, title='Added to trusted certificates')
         else:
             error(fileName, title='Failed to add to trusted certificates')
-            warn('\n' + template('cmd.txt', **command))   
+            warn('\n' + template('cmd.txt', **command))
 
     def untrust(self, certPath):
         """Remove from trusted root certificates
-        
+
         Arguments:
             certPath {str} -- path to certificate file (.crt)
         """
@@ -108,7 +107,8 @@ class Certificate:
 
         if fingerprint:
             fileName = os.path.basename(certPath)
-            command = run_command('certutil -delstore "ROOT" %s' % repr(fingerprint), True)
+            command = run_command(
+                'certutil -delstore "ROOT" %s' % repr(fingerprint), True)
 
             if command['returncode'] == 0:
                 success(fileName, title='Added to trusted certificates')
@@ -116,10 +116,9 @@ class Certificate:
                 error(fileName, title='Failed to add to trusted certificates')
                 warn('\n' + template('cmd.txt', **command))
 
-            
     def getFingerprint(self, certPath):
         """Get certificate fingerprint
-        
+
         Arguments:
             certPath {str} -- path to certificate file (.crt)
 
@@ -130,6 +129,7 @@ class Certificate:
             return None
 
         with open(certPath, 'rb') as certFile:
-            cert = x509.load_pem_x509_certificate(certFile.read(), default_backend())
+            cert = x509.load_pem_x509_certificate(
+                certFile.read(), default_backend())
             fingerprint = cert.fingerprint(hashes.SHA1())
             return ":".join("{:02x}".format(c) for c in fingerprint).upper()

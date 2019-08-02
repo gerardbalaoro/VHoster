@@ -1,5 +1,0 @@
-<!--(if exists("command"))-->
->> $!command!$
-
-<!--(end)-->
-$!output.strip()!$

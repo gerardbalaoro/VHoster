@@ -1,30 +1,25 @@
 import os
 import json
 from copy import deepcopy
-from vhoster.helpers import *
+from .helpers import *
+from .errors import InvalidConfigError
 
 
 class Config:
-    """Configuration Driver Class"""
+    """Configuration Driver
 
-    # Path to data store file
-    __path = ''
-
-    # Config data container
-    __data = None
+    Keyword Arguments:
+        path {str} -- path to data store file (default: {''})
+    """
 
     def __init__(self, path=''):
-        """Initialize configuration driver instance
-
-        Keyword Arguments:
-            path {str} -- path to data store file (default: {''})
-        """
         self.__path = path
+        self.__data = {}
         self.load()
 
     def __repr__(self):
         """Return the canonical representation of this object
-        
+
         Returns:
             str
         """
@@ -32,7 +27,7 @@ class Config:
 
     def __str__(self):
         """Return the string representation of this object
-        
+
         Returns:
             str
         """
@@ -41,9 +36,9 @@ class Config:
     @property
     def path(self):
         """Get the path of data store file
-        
+
         Returns:
-            [type] -- [description]
+            str
         """
         return self.__path
 
@@ -60,33 +55,60 @@ class Config:
         """
         return dot_get(self.__data, key, default, copy)
 
-    def set(self, key, value):
-        """Set value of given key, create if not exists
+    def set(self, key, value, create=True):
+        """Set value of given key
 
         Arguments:
             key {str} -- key using dot notation
             value {mixed} -- key value
+            create {bool} -- allow creation of new key
         """
         nodes = key.split('.')
         data = self.__data
 
         for i, node in enumerate(nodes):
             if isinstance(data, dict):
-                if i + 1 == len(nodes):
+                if i + 1 == len(nodes) and (node in data.keys() or create):
                     data[node] = value
+                    break
                 else:
                     if node in data.keys():
                         data = data[node]
-                    else:
+                    elif create:
                         data[node] = value
+                        break
+
+        self.save()
+
+    def rem(self, key):
+        """Remove value by key, if exists
+
+        Arguments:
+            key {str} -- key using dot notation
+        """
+        nodes = key.split('.')
+        data = self.__data
+
+        for i, node in enumerate(nodes):
+            if isinstance(data, dict):
+                if i + 1 == len(nodes) and node in data.keys():
+                    del data[node]
+                    break
+                else:
+                    if node in data.keys():
+                        data = data[node]
+                        break
 
         self.save()
 
     def load(self):
         """Load data from file, if path is defined"""
-        if self.__path:
-            with open(self.__path, 'r') as f:
-                self.__data = json.load(f)
+        try:
+            if self.__path:
+                with open(self.__path, 'r') as f:
+                    self.__data = json.load(f)
+        except Exception as err:
+            raise InvalidConfigError(str(err))
 
     def save(self):
         """Save data to file, if file is defined"""
