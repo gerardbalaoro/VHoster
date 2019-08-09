@@ -45,6 +45,24 @@ def hosts_path():
         return '/etc/hosts'
 
 
+def valid_filename(s):
+    """
+    Return the given string converted to a string that can be used for a clean
+    filename. Remove leading and trailing spaces; convert other spaces to
+    underscores; and remove anything that is not an alphanumeric, dash,
+    underscore, or dot.
+
+    Arguments:
+        s {str}
+
+    Returns:
+        str
+    """
+    import re
+    s = str(s).strip().replace(' ', '_')
+    return re.sub(r'(?u)[^-\w.]', '-', s)
+
+
 def dot_get(data, key='', default=None, copy=False):
     """Retrieve key value from data using dot notation
     
@@ -90,6 +108,28 @@ def get_free_tcp_port():
     addr, port = tcp.getsockname()
     tcp.close()
     return port
+
+
+def is_port_open(port):
+    """Check if port is open
+    
+    Arguments:
+        port {int} -- port
+    
+    Returns:
+        bool
+    """
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        port = int(port)
+        return not s.connect_ex(('localhost', port)) == 0
+
+
+def parse_host(url, default_port:int=None):
+    import re
+    pattern = r"^(?P<domain>[a-zA-Z0-9.-]+)(:?)(?P<port>[0-9]*?)$"
+    matches = re.search(pattern, url)
+    return {'domain': matches.groupdict().get('domain'), 'port': matches.groupdict().get('port') or default_port}
 
 
 def str_replace(string, substitutions: dict):
@@ -148,7 +188,10 @@ def template(name, **substitutions):
     from importlib_resources import read_text
     from pyratemp import Template
     from . import templates
-    return Template(read_text(templates, name))(**substitutions)
+    return Template(read_text(templates, name))(**substitutions, f={
+        'parse_host': parse_host,
+        'is_port_open': is_port_open
+    })
 
 
 def echo(message, title=None, style=None, pre='',**kwargs):

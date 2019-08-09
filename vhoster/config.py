@@ -72,11 +72,12 @@ class Config:
                     data[node] = value
                     break
                 else:
-                    if node in data.keys():
-                        data = data[node]
-                    elif create:
-                        data[node] = value
-                        break
+                    if node not in data.keys():
+                        if create:
+                            data[node] = {}
+                        else:
+                            break                    
+                    data = data[node]
 
         self.save()
 
@@ -104,14 +105,18 @@ class Config:
     def load(self):
         """Load data from file, if path is defined"""
         try:
-            if self.__path:
-                with open(self.__path, 'r') as f:
-                    self.__data = json.load(f)
+            if self.path:
+                if os.path.exists(self.path) and os.path.isfile(self.path):
+                    with open(self.path, 'r') as f:
+                        self.__data = json.load(f)
+                else:
+                    with open(self.path, 'w+'):
+                        pass
         except Exception as err:
             raise InvalidConfigError(str(err))
 
     def save(self):
         """Save data to file, if file is defined"""
-        if self.__path:
-            with open(self.__path, 'w+') as f:
+        if self.path:
+            with open(self.path, 'w+') as f:
                 json.dump(self.__data, f, indent=4)

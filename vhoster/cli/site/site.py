@@ -1,5 +1,5 @@
 """Site CLI Commands"""
-from .core import *
+from ..core import *
 
 
 @main.command()
@@ -12,7 +12,7 @@ def list(state):
         for s in sites:
             table.table_data.append([
                 click.style(s.path, fg='bright_yellow') + (('\n => (Root) ' + s.documentRoot()) if s.root else ''),
-                click.style(s.url(), underline=True),
+                click.style(s.url(), underline=True) + (''.join(['\n(mirror) ' + m for m in s.mirrors])),
                 click.style('Yes' if s.secure else 'No', fg='green' if s.secure else 'red')
             ])
         table.inner_row_border = True
@@ -38,8 +38,12 @@ def show(state, domain):
         ['Path:', click.style(site.path, fg='bright_yellow')],
         ['Document Root:', site.documentRoot()] if site.root else ['', ''],
         ['URL:', click.style(site.url(), underline=True)],
-        ['Secure:', click.style('Yes' if site.secure else 'No', fg='green' if site.secure else 'red')]
+        ['Secure:', click.style('Yes' if site.secure else 'No', fg='green' if site.secure else 'red')]        
     ])
+    if site.mirrors:
+        table.table_data.append(['',''])
+        table.table_data.append(['Mirrors:', '\n'.join(site.mirrors)])
+
     table.inner_heading_row_border = False        
     echo(table.table)
 
@@ -87,10 +91,9 @@ def park(state, domain, path, root, secure):
     """Register the current (or specified) PATH to given DOMAIN"""
     site = state.site
     try:
-        if path:
-            site = Site(state.config, path=path)
-
-        site.domain = domain
+        site = Site(state.config, domain=domain)
+        site.path = path if path else state.path
+        
         if root:
             site.root = root
         if secure:
@@ -162,12 +165,16 @@ def unsecure(state, domain, path):
         raise click.Abort()
 
 
-@main.command(short_help='Link current working directory to domain')
+@main.command(short_help='Link directory to domain')
 @click.argument('domain', type=str, default=None)
+@click.option('--path', '-p', metavar='PATH', type=click.Path(exists=True, file_okay=False), default=None, help='Specify custom directory')
 @pass_state
-def link(state, domain):
-    """Link the current working directory to given DOMAIN"""
+def link(state, domain, path):
+    """Link the current working (or specified) directory to given DOMAIN"""
     site = state.site
+    if path:
+        site = site.find(path=path)
+        
     if site.exists():
         site.domain = domain
         site.save()
@@ -175,6 +182,25 @@ def link(state, domain):
         success('\nCurrent directory successfully linked to %s' % site.url())
     else:
         raise click.ClickException(SiteNotFoundError(domain or site.domain, path or site.path))
+        raise click.Abort()
+
+
+@main.command()
+@click.argument('old', type=str)
+@click.argument('new', type=str)
+@pass_state
+def rename(state, old, new):
+    """Change site domain name"""
+    site = state.site
+    site = site.find(domain=old)
+        
+    if site.exists():
+        site.domain = new
+        site.save()
+        state.server.restart()
+        success('\nSite successfully parked to %s' % site.url())
+    else:
+        raise click.ClickException(SiteNotFoundError(old))
         raise click.Abort()
 
 
@@ -192,7 +218,7 @@ def set_root(state, path, domain):
         site.root = path
         site.save()
         state.server.restart()
-        success('\nSite %s document root set to  %s' % (site.url(), site.trueRoot()))
+        success('\nSite %s document root set to  %s' % (site.url(), site.documentRoot()))
     else:
         raise click.ClickException(SiteNotFoundError(domain or site.domain, path or site.path))
         raise click.Abort()
@@ -209,9 +235,8 @@ def refresh(state, domain, path):
         site = site.find(domain=domain, path=path)
 
     if site.exists():
-        site.save()
+        site.save(force=True)
         state.server.restart()
-        success('\nSite %s document root set to  %s' % (site.url(), site.trueRoot()))
     else:
         raise click.ClickException(SiteNotFoundError(domain or site.domain, path or site.path))
         raise click.Abort()

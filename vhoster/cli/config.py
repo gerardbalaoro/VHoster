@@ -41,29 +41,51 @@ def set(state, key, value):
 
     
 @config.command()
-def setup():
+@pass_state
+def setup(state):
     """Create fresh configuration"""
-    config = {
-        "dns": {
-            "file": click.prompt('Path to Hosts File', type=click.Path(exists=True, dir_okay=False), default=hosts_path())
-        },
-        "apache": {
-            "bin": click.prompt('Apache Daemon Binary (httpd)', type=click.Path(exists=True, dir_okay=False)),
-            "conf": click.prompt('Apache Configuration File', type=click.Path(exists=True, dir_okay=False))
-        },
-        "paths": {
-            "conf": click.prompt('Where to store site configuration files?', type=click.Path(file_okay=False), default=app_data('conf')),
-            "certs": click.prompt('Where to store site TLS certificates?', type=click.Path(file_okay=False), default=app_data('certs'))
-        },
-        "ngrok": {
-            "config": click.prompt('Where to store ngrok configuration file?', type=click.Path(dir_okay=False), default=app_data('ngrok.yml')),
-            "token": click.prompt('Ngrok authentication token', type=str, default=None)
-        },
-        "sites": []
-    }
-    with open(app_data('config.json'), 'w+') as f:
-        json.dump(config, f, indent=4)
-    click.secho('Configuration file saved', fg='green')
+    import json
+
+    if os.path.exists(state.config.path):
+        click.confirm(click.style('Existing configuration was found. Overwrite?', fg='yellow'), abort=True)
+
+    def crawl(data:dict, skip=[], parents=[]):
+        for key, attrs in data.get('properties', {}).items():
+            fullkey = '.'.join(parents + [key])
+            if fullkey not in skip and (False if [x for x in parents if x in skip] else True):
+                if attrs.get('type') == 'object':
+                    crawl(attrs, skip=skip, parents=parents + [key])
+                else:
+                    types = {'string': str, 'boolean': bool, 'integer': int}
+                    is_path = [x for x in attrs.get('is_path', '').split('|') if x]
+                    defaults = {
+                        'dns.file': hosts_path(), 
+                        'apache.sites': app_data('conf'), 
+                        'apache.certs': app_data('certs'),
+                        'ngrok.config': app_data('ngrok.yml')
+                    }
+                    prompt = {
+                        'text': attrs.get('description') or attrs.get('title'),
+                        'type': click.Path(
+                            exists='exists' in is_path,
+                            file_okay='file' in is_path,
+                            dir_okay='dir' in is_path
+                        ) if is_path else types.get(attrs.get('type'), str),
+                        'default': defaults.get(fullkey, attrs.get('default', None)),
+                        'prompt_suffix': '\n >> '
+                    }
+                    
+                    if prompt['type'] == bool:
+                        value = click.confirm(prompt['text'], default=prompt['default'])
+                    else:
+                        value = click.prompt(**prompt)
+                    state.config.set(fullkey, value, create=True)
+
+    schema = json.loads(template('config.schema'))
+    crawl(schema, skip='sites')
+    state.config.save()
+    click.secho('\nConfiguration file saved', fg='green')
+
 
 
 @config.command()

@@ -1,0 +1,197 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/root.json",
+    "type": "object",
+    "title": "The Root Schema",
+    "required": [
+        "dns",
+        "ngrok",
+        "apache",
+        "sites"
+    ],
+    "properties": {
+        "dns": {
+            "$id": "#/properties/dns",
+            "type": "object",
+            "title": "DNS Configuration",
+            "default": null,
+            "required": [
+                "file"
+            ],
+            "properties": {
+                "file": {
+                    "$id": "#/properties/dns/properties/file",
+                    "type": "string",
+                    "title": "DNS File",
+                    "description": "Path to DNS (hosts) file",
+                    "default": "",
+                    "examples": [
+                        "C:\\Windows\\System32\\drivers\\etc\\hosts"
+                    ],
+                    "pattern": "^(?!(?:.*\\s|.*\\.|\\W+)$)(?:[a-zA-Z]:)?(?:(?:[^<>:\"\\|\\?\\*\\n])+(?:\\/\\/|\\/|\\\\\\\\|\\\\)?)+$",
+                    "is_path": "exists|file"
+                }
+            }
+        },
+        "ngrok": {
+            "$id": "#/properties/ngrok",
+            "type": "object",
+            "title": "Ngrok Configuration",
+            "default": null,
+            "required": [
+                "config",
+                "token"
+            ],
+            "properties": {
+                "config": {
+                    "$id": "#/properties/ngrok/properties/config",
+                    "type": "string",
+                    "title": "Ngrok Config File",
+                    "description": "Path to Ngrok configuration file",
+                    "default": "",
+                    "examples": [
+                        "ngrok.yml"
+                    ],
+                    "pattern": "^(?!(?:.*\\s|.*\\.|\\W+)$)(?:[a-zA-Z]:)?(?:(?:[^<>:\"\\|\\?\\*\\n])+(?:\\/\\/|\\/|\\\\\\\\|\\\\)?)+$",
+                    "is_path": "exists|file"
+                },
+                "token": {
+                    "$id": "#/properties/ngrok/properties/token",
+                    "type": "string",
+                    "title": "Ngrok Authentication Token",
+                    "default": "",
+                    "pattern": "^(.*)$"
+                }
+            }
+        },
+        "apache": {
+            "$id": "#/properties/apache",
+            "type": "object",
+            "title": "Apache Configuration",
+            "default": null,
+            "required": [
+                "bin",
+                "conf",
+                "sites",
+                "certs",
+                "appendToConf"
+            ],
+            "properties": {
+                "bin": {
+                    "$id": "#/properties/apache/properties/bin",
+                    "type": "string",
+                    "title": "Apache Binary",
+                    "description": "Path to Apache (daemon) binary",
+                    "default": "",
+                    "examples": [
+                        "C:\\Xampp\\apache\\bin\\httpd.exe"
+                    ],
+                    "pattern": "^(?!(?:.*\\s|.*\\.|\\W+)$)(?:[a-zA-Z]:)?(?:(?:[^<>:\"\\|\\?\\*\\n])+(?:\\/\\/|\\/|\\\\\\\\|\\\\)?)+$",
+                    "is_path": "exists|file"
+                },
+                "conf": {
+                    "$id": "#/properties/apache/properties/conf",
+                    "type": "string",
+                    "title": "Apache Main Configuration",
+                    "description": "Path to Apache main configuration file",
+                    "default": "",
+                    "examples": [
+                        "C:\\Xampp\\apache\\conf\\httpd.conf"
+                    ],
+                    "pattern": "^(?!(?:.*\\s|.*\\.|\\W+)$)(?:[a-zA-Z]:)?(?:(?:[^<>:\"\\|\\?\\*\\n])+(?:\\/\\/|\\/|\\\\\\\\|\\\\)?)+$",
+                    "is_path": "exists|file"
+                },
+                "sites": {
+                    "$id": "#/properties/apache/properties/sites",
+                    "type": "string",
+                    "title": "Apache Virtual Hosts Folder",
+                    "description": "Path to store virtual host configuration files",
+                    "default": "",
+                    "examples": [
+                        "C:\\Xampp\\apache\\sites\\conf"
+                    ],
+                    "pattern": "^(?!(?:.*\\s|.*\\.|\\W+)$)(?:[a-zA-Z]:)?(?:(?:[^<>:\"\\|\\?\\*\\n])+(?:\\/\\/|\\/|\\\\\\\\|\\\\)?)+$",
+                    "is_path": "exists|dir"
+                },
+                "certs": {
+                    "$id": "#/properties/apache/properties/certs",
+                    "type": "string",
+                    "title": "Apache Certificates Folder",
+                    "description": "Path to store virtual host certificates",
+                    "default": "",
+                    "examples": [
+                        "C:\\Xampp\\apache\\sites\\certs"
+                    ],
+                    "pattern": "^(?!(?:.*\\s|.*\\.|\\W+)$)(?:[a-zA-Z]:)?(?:(?:[^<>:\"\\|\\?\\*\\n])+(?:\\/\\/|\\/|\\\\\\\\|\\\\)?)+$",
+                    "is_path": "exists|dir"
+                },
+                "appendToConf": {
+                    "$id": "#/properties/apache/properties/appendToConf",
+                    "type": "boolean",
+                    "title": "Append To Main Configuration",
+                    "description": "Append `Include virtualhost.conf` directive to Apache main configuration",
+                    "default": true
+                }
+            }
+        },
+        "sites": {
+            "$id": "#/properties/sites",
+            "type": "array",
+            "title": "Virtual Hosts Store",
+            "default": null,
+            "items": {
+                "$id": "#/properties/sites/items",
+                "type": "object",
+                "title": "Virtual Host",
+                "default": null,
+                "required": [
+                    "domain",
+                    "path",
+                    "root",
+                    "secure"
+                ],
+                "properties": {
+                    "domain": {
+                        "$id": "#/properties/sites/items/properties/domain",
+                        "type": "string",
+                        "title": "Domain Name",
+                        "default": "",
+                        "examples": [
+                            "localhost.test"
+                        ],
+                        "pattern": "^([a-zA-Z0-9.-]+)(:?)([0-9]*?)$"
+                    },
+                    "path": {
+                        "$id": "#/properties/sites/items/properties/path",
+                        "type": "string",
+                        "title": "Site Working Directory",
+                        "default": "",
+                        "examples": [
+                            "C:\\Xampp\\htdocs"
+                        ],
+                        "pattern": "^(?!(?:.*\\s|.*\\.|\\W+)$)(?:[a-zA-Z]:)?(?:(?:[^<>:\"\\|\\?\\*\\n])+(?:\\/\\/|\\/|\\\\\\\\|\\\\)?)+$",
+                        "is_path": "exists|dir"
+                    },
+                    "root": {
+                        "$id": "#/properties/sites/items/properties/root",
+                        "type": "string",
+                        "title": "Custom Document Root Directory",
+                        "default": null,
+                        "examples": [
+                            "public",
+                            "dist"
+                        ],
+                        "pattern": "^(.*)$"
+                    },
+                    "secure": {
+                        "$id": "#/properties/sites/items/properties/secure",
+                        "type": "boolean",
+                        "title": "Enable HTTPS and SSL/TLS",
+                        "default": false
+                    }
+                }
+            }
+        }
+    }
+}

@@ -52,11 +52,30 @@ class SiteStore:
             return id, deepcopy(self.__store[id])
 
         for i, site in enumerate(self.__store):
-            if (site['path'] == path) or (site['domain'] == domain):
+            if (site['domain'] == domain) or (site['path'] == path):
                 if ignore == None or ignore != i:
                     return i, deepcopy(site)
 
         return None, None
+
+    def get(self, path=None, ignore=None):
+        """Get sites matching specified path                
+
+        Keyword Arguments:
+            domain {str} -- site domain (default: {None})
+            path {str} -- site path (default: {None})
+            ignore {int} -- ignore site with this ID
+
+        Returns:
+            dict -- {id: data}
+        """
+        result = {}
+        for i, site in enumerate(self.__store):
+            if (site['path'] == path):
+                if ignore == None or ignore != i:
+                    result[i] = deepcopy(site)
+
+        return result
 
     def update(self, id: int, **kwargs):
         """Update existing site values with specified parameters
@@ -126,11 +145,13 @@ class Site:
             self.__path = site['path']
             self.__root = site.get('root', '')
             self.__secure = site.get('secure', False)
+            self.__mirrors = site.get('mirrors', [])
         else:
             self.__domain = domain
             self.__path = path
             self.__root = root
             self.__secure = secure
+            self.__mirrors = []
 
     def __repr__(self):
         """Return the canonical representation of this object
@@ -168,6 +189,7 @@ class Site:
             'path': self.path,
             'root': self.root,
             'secure': self.secure,
+            'mirrors': self.mirrors
         }
 
     def find(self, domain=None, path=None):
@@ -221,6 +243,14 @@ class Site:
         """
         return True if self.id != None else False
 
+    def links(self):
+        """Get all sites registered to path
+
+        Returns:
+            bool
+        """
+        return [Site(self.config, id=id) for id, site in enumerate(self.store.get(self.path))]
+
     def delete(self):
         """Delete site from store and remove configurations
 
@@ -244,18 +274,22 @@ class Site:
         with open(confPath, 'w+') as f:
             conf = template(
                 'site.conf',
-                domain=self.hostName(),
+                domain=self.domain,
                 url=self.url(),
                 path=self.documentRoot(),
                 cert=self.certPath(),
                 certkey=self.certKeyPath(),
-                secure=self.secure
+                secure=self.secure,
+                port=self.port(),
+                mirrors=self.mirrors
             )
             f.write(conf)
             info(os.path.basename(confPath), title='Configuration Created')
 
         with open(self.config.get('apache.conf'), 'r+') as f:
-            content = f.read()
+            content = f.read().strip()
+            f.seek(0)
+            f.write(content)
             f.write('\nInclude "%s"' % confPath)
             f.truncate()
             echo('Updated apache configuration file')
@@ -284,7 +318,9 @@ class Site:
     def writeDnsEntry(self):
         """Write DNS entry for this site"""
         with open(self.config.get('dns.file'), 'r+') as f:
-            content = f.read()
+            content = f.read().strip()
+            f.seek(0)
+            f.write(content)
             f.write('\n127.0.0.1 %s #VirtualHost' % self.hostName())
             f.write('\n127.0.0.1 www.%s #VirtualHost' % self.hostName())
             f.truncate()
@@ -302,7 +338,7 @@ class Site:
                 else:
                     removed.append(line)
             f.seek(0)
-            f.write('\n'.join(content))
+            f.write(''.join(content))
             f.truncate()
             if removed:
                 echo('Updated DNS (hosts) file')
@@ -343,7 +379,7 @@ class Site:
             str
         """
         path = os.path.abspath(os.path.join(self.config.get(
-            'paths.conf') or app_data('conf'), self.hostName(useCrumbs=useCrumbs) + '.conf'))
+            'apache.sites') or app_data('conf'), valid_filename(self.hostName(useCrumbs=useCrumbs)) + '.conf'))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         return path
 
@@ -357,7 +393,7 @@ class Site:
             str
         """
         path = os.path.abspath(os.path.join(self.config.get(
-            'paths.certs') or app_data('certs'), self.hostName(useCrumbs=useCrumbs) + '.crt'))
+            'apache.certs') or app_data('certs'), valid_filename(self.hostName(useCrumbs=useCrumbs)) + '.crt'))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         return path
 
@@ -371,20 +407,42 @@ class Site:
             str
         """
         path = os.path.abspath(os.path.join(self.config.get(
-            'paths.certs') or app_data('certs'), self.hostName(useCrumbs=useCrumbs) + '.key'))
+            'apache.certs') or app_data('certs'), valid_filename(self.hostName(useCrumbs=useCrumbs)) + '.key'))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         return path
 
-    def hostName(self, useCrumbs=False):
+    def hostName(self, useCrumbs=False, withPort=True):
         """Return site domain name
+
+        Keyword Arguments:
+            useCrumbs {bool} -- use previous value (default: {False})
+            withPort {bool} -- show site port (default: {True})
+
+        Returns:
+            str
+        """
+        domain = self.__crumbs.get('domain', self.domain) if useCrumbs else self.domain
+        
+        if not withPort:
+            host = parse_host(domain)
+            return host['domain']
+        
+        return domain
+
+    def port(self, useCrumbs=False):
+        """Return site port
 
         Keyword Arguments:
             useCrumbs {bool} -- use previous value (default: {False})
 
         Returns:
-            str
+            int
         """
-        return self.__crumbs.get('domain', self.domain) if useCrumbs else self.domain
+        host = parse_host(self.hostName(useCrumbs=useCrumbs))
+        if host['port']:
+            port = int(host['port'])
+            if port not in [80, 443]:
+                return port
 
     def url(self, useCrumbs=False):
         """Return full site url with protocol
@@ -413,6 +471,26 @@ class Site:
             return os.path.abspath(os.path.join(path, root))
         else:
             return os.path.abspath(path)
+
+    def addMirror(self, domain):
+        if self.store.find(domain=domain) != (None, None):
+            raise SiteExistsError(domain=domain)
+        else:
+            if not self.__crumbs.get('mirrors'):
+                self.__crumbs['mirrors'] = deepcopy(self.__mirrors)
+            self.__mirrors.append(domain)
+
+    def removeMirror(self, domain):
+        if self.store.find(domain=domain) != (None, None):
+            raise SiteExistsError(domain=domain)
+        else:
+            if not self.__crumbs.get('mirrors'):
+                self.__crumbs['mirrors'] = deepcopy(self.__mirrors)
+            self.__mirrors.remove(domain)
+
+    @property
+    def mirrors(self):
+        return deepcopy(self.__mirrors)
 
     @property
     def id(self):

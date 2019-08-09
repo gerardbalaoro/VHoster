@@ -49,3 +49,12 @@ def main(ctx):
         raise click.Abort()
 
     ctx.obj = State(config, path=os.getcwd())
+    if len(ctx.obj.site.links()) > 1:
+        info('Multiple sites are found to be registered to this path.\nThe program will use `%s` by default.' % ctx.obj.site.domain)
+        echo('\nTo use other domains, simple pass the domain parameter:\n\n\tvhoster show otherdomain.test\n')
+
+    # import ptvsd
+    # click.echo("Waiting for debugger attach")
+    # ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+    # ptvsd.wait_for_attach()
+    # breakpoint()
