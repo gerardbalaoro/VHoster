@@ -6,7 +6,7 @@ Click==7.0
 click-alias==0.1.1a3
 click-hotoffthehamster==7.0.0a2
 colorama==0.4.1
-cryptography==2.7
+cryptography==3.2
 importlib-resources==1.0.2
 isort==4.3.21
 lazy-object-proxy==1.4.1
